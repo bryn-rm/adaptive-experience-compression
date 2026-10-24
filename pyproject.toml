@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adaptive-experience-compression"
+version = "0.1.0"
+description = "Research scaffold for adaptive experience compression"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2.10,<3", "PyYAML>=6,<7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+alfworld = ["alfworld>=0.4,<0.5"]
+
+[project.scripts]
+aec = "aec.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
