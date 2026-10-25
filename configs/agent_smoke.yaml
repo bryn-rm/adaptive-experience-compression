@@ -1,0 +1,16 @@
+log_level: INFO
+environment:
+  backend_config: configs/alfworld_backend.yaml
+  split: eval_out_of_distribution
+  max_steps: 50
+  seed: 0
+agent:
+  prompt_version: agent_v1
+  llm:
+    provider: openai
+    model_id: gpt-4o-mini-2024-07-18
+    temperature: 0
+    top_p: 1
+    max_completion_tokens: 128
+    seed: 0
+    timeout_seconds: 60

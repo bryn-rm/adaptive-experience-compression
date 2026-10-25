@@ -72,3 +72,73 @@ ALFWorld/TextWorld installation and task data are required before Phase 2 runs.
 Upstream API references:
 [ALFWorld text adapter](https://github.com/alfworld/alfworld/blob/master/alfworld/agents/environment/alfred_tw_env.py)
 and [installation/data instructions](https://github.com/alfworld/alfworld#quickstart).
+
+## Phase 2: frozen agent and canonical trajectories
+
+Install the provider and text extras, provision ALFWorld text data as above, and
+set `OPENAI_API_KEY` in the environment. Credentials are never config fields or
+artifact fields. Run from the repository root:
+
+```sh
+.venv/bin/python -m pip install -e '.[dev,alfworld,openai]'
+.venv/bin/python scripts/smoke_agent.py --config configs/agent_smoke.yaml --episodes 10 --output /tmp/agent-trajectories.jsonl
+```
+
+`configs/agent_smoke.yaml` explicitly fixes a dated model ID, decoding settings,
+provider seed, prompt version, environment seed, split, and step limit. The model
+ID is an example requiring account access, not a validated ALFWorld baseline.
+The provider uses OpenAI Chat Completions with no SDK retries or conversation
+state. It records the returned model ID and system fingerprint when supplied.
+Provider seeds offer best-effort reproducibility, not guaranteed identical output;
+models must support the configured Chat Completions parameters. There is no
+parameter fallback or model substitution. See the
+[official API reference](https://developers.openai.com/api/reference/python/resources/chat/subresources/completions/methods/create).
+Real provider and ALFWorld execution on Python 3.14 remains unverified here.
+
+`LLMClient.generate(prompt, config)` returns project-owned text and usage data.
+`agent_v1` sends only the task description, current observation, sorted admissible
+actions, and the required exact single-line action format. It requests no
+reasoning and stores no provider reasoning fields. Change the prompt version if
+this content changes. No previous-task or interaction-history context is added.
+
+Parsing trims surrounding whitespace and requires an exact admissible-action
+match. Malformed, refused, or truncated responses abort the episode, log a parse
+error, preserve the public output, and execute no substituted action. Missing
+admissible actions also abort; this is the single fixed acting setup. Provider
+and environment errors after reset produce aborted artifacts with error types;
+exception messages are excluded to avoid leaking credential-bearing diagnostics.
+Initialization, reset, and output-write errors fail loudly rather than fabricate
+a task identity or a successful write.
+
+Each `AgentTrajectory` in the append-only JSONL extends the existing `Trajectory`
+schema. It records task metadata, UUID trajectory ID, shared smoke-run ID,
+settings, backend-config SHA-256, termination, monotonic elapsed seconds, token
+usage, and steps. Load each line with
+`aec.trajectories.schemas.AgentTrajectory.model_validate_json(line)`. The recorder
+revalidates artifacts and refuses to append after an incomplete final line. It is
+intended for one writer; concurrent execution is outside this phase.
+
+Canonical step `observation` is the input to the LLM; `next_observation` is the
+confirmed post-action environment observation. `prompt` and `output` preserve
+observable request/public-response text. `executed` means the environment returned
+a confirmed result; after an environment exception actual execution may be
+unknown. On abort, step `done` terminates the acting loop;
+`environment_termination_reason` separately records confirmed environment endings.
+Indices start at zero. Step wall time includes generation and environment work;
+episode wall time includes reset but excludes artifact writing.
+
+`reward` and `total_reward` both mean the last confirmed cumulative TextWorld
+score, **not** the sum of step scores. Token counts are summed from per-call
+provider usage and also retained in the original nested `token_usage` schema.
+An unsuccessful provider call may have unknown billable usage: its counts use
+zero placeholders with `usage_known: false`, so an aborted artifact's token totals
+must not be treated as complete cost accounting. `success_known: false` likewise
+marks missing success evidence; `success: false` is then a placeholder. Separate
+`status: aborted` artifacts from completed environment outcomes in later analysis.
+Environment and provider seeds are recorded separately. Keep the backend config
+and task paths stable during runs; the config hash permits later mismatch checks.
+
+The offline test suite runs ten distinct scripted tasks, validates every artifact,
+and covers successful episodes, environment failures, parse aborts, token/timing
+metadata, prompt versioning, provider conversion, and append-only recording. This
+smoke script adds no manifest, resumability, metrics pipeline, or Phase 3 baseline.
