@@ -1,0 +1,54 @@
+{
+  "config": "configs/skill_pilot.yaml",
+  "created_at": "2026-11-18T14:50:07.245606+00:00",
+  "embedding": {
+    "dimensions": 1536,
+    "prompt_tokens": 9,
+    "requested": "text-embedding-3-small",
+    "returned": "text-embedding-3-small"
+  },
+  "policy": "skill",
+  "query_text": "heat some mug and put it in cabinet.",
+  "source_trajectory_ids": [
+    "e3df8df3-ba12-4867-b1df-92bcefb4ca0e",
+    "a5215508-a306-4650-8f0b-0919077e4007"
+  ],
+  "writer": {
+    "finish_reason": "stop",
+    "output": "{\"name\":\"Heat Object and Store\",\"activation_conditions\":[\"Task requires heating an object and placing it in a receptacle.\",\"A microwave and target receptacle are available.\"],\"procedure\":[\"Search visible surfaces and opened containers for the requested object; open closed storage only as needed.\",\"Take the object.\",\"Go to the microwave, open it, and place the object inside.\",\"Close the microwave, then reopen it and take the object out.\",\"Heat the held object using the microwave.\",\"Go to a receptacle of the requested type and move the heated object onto or into it.\"],\"constraints\":[\"Use object and receptacle types rather than instance numbers.\",\"Open containers before accessing contents.\",\"Keep the object held when issuing the heat action.\"],\"failure_modes\":[\"Avoid repeatedly revisiting unrelated cabinets or the fridge after the object is found.\",\"Avoid opening empty storage without a search reason.\",\"Avoid repeated examine, open, and close actions on the microwave; retrieve the object and heat it promptly.\",\"Do not leave the object inside the microwave when heating; take it out first.\"]}",
+    "parse_error": null,
+    "parsed": {
+      "activation_conditions": [
+        "Task requires heating an object and placing it in a receptacle.",
+        "A microwave and target receptacle are available."
+      ],
+      "constraints": [
+        "Use object and receptacle types rather than instance numbers.",
+        "Open containers before accessing contents.",
+        "Keep the object held when issuing the heat action."
+      ],
+      "failure_modes": [
+        "Avoid repeatedly revisiting unrelated cabinets or the fridge after the object is found.",
+        "Avoid opening empty storage without a search reason.",
+        "Avoid repeated examine, open, and close actions on the microwave; retrieve the object and heat it promptly.",
+        "Do not leave the object inside the microwave when heating; take it out first."
+      ],
+      "name": "Heat Object and Store",
+      "procedure": [
+        "Search visible surfaces and opened containers for the requested object; open closed storage only as needed.",
+        "Take the object.",
+        "Go to the microwave, open it, and place the object inside.",
+        "Close the microwave, then reopen it and take the object out.",
+        "Heat the held object using the microwave.",
+        "Go to a receptacle of the requested type and move the heated object onto or into it."
+      ]
+    },
+    "requested": "gpt-5.6-terra",
+    "returned": "gpt-5.6-terra",
+    "token_usage": {
+      "completion_tokens": 295,
+      "prompt_tokens": 2746
+    }
+  },
+  "writer_prompt_version": "skill_writer_v1"
+}

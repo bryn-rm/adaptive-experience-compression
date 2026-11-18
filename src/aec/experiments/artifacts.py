@@ -9,11 +9,13 @@ import random
 import tempfile
 from typing import Annotated, Literal, TypeVar
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 import yaml
 
 from aec.config import ALFWorldConfig, AgentConfig, MemoryConfig
-from aec.schemas import EpisodicMemory, NonEmpty, RetrievalRecord, Schema, TokenUsage
+from aec.schemas import (
+    EpisodicMemory, NonEmpty, ProceduralSkill, RetrievalRecord, Schema, Sources, TokenUsage,
+)
 
 
 def digest(value: object) -> str:
@@ -177,12 +179,19 @@ class RetrievalLog(Schema):
     store_size: int = Field(ge=0)
     eligible_count: int = Field(ge=0)
     records: list[RetrievalRecord]
-    source_trajectory_ids: list[NonEmpty]
+    # One provenance list per record: one trajectory per episode, all sources per skill.
+    source_trajectory_ids: list[Sources]
     memory_section: str | None
     memory_tokens: int = Field(ge=0)
     embedding_model_id: NonEmpty
     embedding_tokens: int = Field(ge=0)
     created_at: datetime
+
+    @field_validator("source_trajectory_ids", mode="before")
+    @classmethod
+    def phase4_episode_sources(cls, value):
+        # Phase 4 logs stored one bare trajectory ID per retrieved episode.
+        return [[v] if isinstance(v, str) else v for v in value] if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def consistent(self):
@@ -198,7 +207,11 @@ class RetrievalLog(Schema):
 
 
 class MemoryWrite(Schema):
-    """Append-only episode-writing log; `stored` rows are the store's source of truth."""
+    """Append-only memory-writing log; `stored` rows are the store's source of truth.
+
+    `trajectory_id` is the triggering trajectory. Skill rows also list every source,
+    oldest first, ending with the trigger.
+    """
 
     run_id: NonEmpty
     task_id: NonEmpty
@@ -218,14 +231,27 @@ class MemoryWrite(Schema):
     embedding_model_id: str | None = None
     embedding_tokens: int = Field(default=0, ge=0)
     memory: EpisodicMemory | None = None
+    skill: ProceduralSkill | None = None
+    source_trajectory_ids: list[NonEmpty] = Field(default_factory=list)
+    source_task_ids: list[NonEmpty] = Field(default_factory=list)
     embedding: list[float] | None = None
     created_at: datetime
 
     @model_validator(mode="after")
     def consistent(self):
         stored = self.status == "stored"
-        if stored != (self.memory is not None) or stored != (self.embedding is not None):
-            raise ValueError("Exactly stored writes carry a memory and its embedding")
+        payloads = (self.memory is not None) + (self.skill is not None)
+        if payloads > 1 or stored != (payloads == 1) or stored != (self.embedding is not None):
+            raise ValueError("Exactly stored writes carry one memory and its embedding")
         if self.memory is not None and self.memory.source_trajectory_ids != [self.trajectory_id]:
             raise ValueError("Episode provenance differs from its source trajectory")
+        if len(self.source_task_ids) != len(self.source_trajectory_ids):
+            raise ValueError("Each skill source trajectory needs its task ID")
+        if self.source_trajectory_ids and (self.source_trajectory_ids[-1] != self.trajectory_id
+                                           or self.source_task_ids[-1] != self.task_id):
+            raise ValueError("The triggering trajectory must be the newest skill source")
+        if self.skill is not None and self.skill.source_trajectory_ids != self.source_trajectory_ids:
+            raise ValueError("Skill provenance differs from its recorded sources")
+        if len(set(self.source_trajectory_ids)) != len(self.source_trajectory_ids):
+            raise ValueError("Duplicate skill source trajectory")
         return self

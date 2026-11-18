@@ -20,7 +20,7 @@ from aec.experiments.artifacts import (
     Attempt, BaselineConfig, RetrievalLog, TaskManifest, TaskResult, append_row, digest,
     file_hash, read_rows, utc_now, write_once,
 )
-from aec.experiments.memory import EpisodicPolicy, token_counter
+from aec.experiments.memory import memory_policy, token_counter
 
 
 def resolve_run(config: BaselineConfig, manifest: TaskManifest) -> dict:
@@ -183,7 +183,7 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
             raise ValueError("Duplicate trajectory ID")
         policy = None
         if config.memory is not None:
-            policy = EpisodicPolicy(
+            policy = memory_policy(
                 config.memory, config.run_id, directory, manifest.task_ids, fresh=fresh,
                 embedder=embedder_factory(), llm_factory=llm_factory,
                 count_tokens=count_tokens or token_counter(config.memory.tokenizer),
@@ -242,7 +242,7 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
                         if resource is not None:
                             resource.close()
             if policy:
-                policy.record_episode(trajectory)  # Finishes before the result commits.
+                policy.record(trajectory)  # Finishes before the result commits.
             result = task_result(trajectory, resolved, retrievals.get(task_id))
             append_row(results_path, result)
             results[task_id] = result

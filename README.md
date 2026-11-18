@@ -377,3 +377,41 @@ against it, reinserts a row lost between log append and store insert, and reject
 any other difference. A writer call interrupted mid-flight is logged as
 `interrupted` and never replayed. A task result commits only after its episode
 write finishes, so stream order is preserved on resume.
+
+## Phase 5: procedural-skill baseline
+
+`configs/skill_pilot.yaml` is the fixed skill policy. Its acting agent, environment,
+and manifest equal B0. Its retrieval machinery (embedding model, cosine ranking,
+top-k, retrieval key, same-task exclusion) and writer LLM equal the episodic pilot.
+Tests enforce all of these. It uses the same runner:
+
+```sh
+export ALFWORLD_DATA="$PWD/data/alfworld"
+# Optional; synthesizes one skill from two recorded successes; choose a NEW output path:
+.venv-alfworld/bin/python scripts/probe_memory_stack.py --config configs/skill_pilot.yaml --source data/results/phase3b-pilot-20/trajectories.jsonl --output /tmp/new-skill-probe.json
+.venv-alfworld/bin/python scripts/run_baseline.py run --config configs/skill_pilot.yaml
+```
+
+Fixed rule (`skill_grouping: task_family`, `skill_min_sources: 2`): successes are
+grouped by the ALFWorld task family the adapter records at reset. When a family
+reaches its k-th success (k >= 2), `skill_writer_v1` re-synthesizes that family's
+skill from **all** k successful trajectories, oldest first, as version k-1. Older
+versions stay in the log and store; retrieval sees only each skill's latest version.
+This is a fixed baseline, not the adaptive discard/episode/skill controller.
+
+A skill has a name, activation conditions, an ordered procedure, constraints, and
+failure modes. The writer sees only observable data and is told to describe object
+and receptacle types, not numbered instances. Output must be strict JSON with exactly
+those fields. Activation conditions and procedure must be non-empty, and every list
+item a non-empty string. Malformed skills are logged as `rejected` and stored
+nowhere. A rejected synthesis does not consume a version; the family's next success
+retries from all its sources. The skill's `embedding_text` is its sources' goal lines,
+never writer output. `source_trajectory_ids` and `source_task_ids` list every source.
+Retrieval records use `<skill_id>@v<version>` IDs. Skills enter the prompt as one
+fixed-format line (`skill_section_v1`) in the same position as episodes; with nothing
+retrieved the prompt is unchanged agent_v2.
+
+`memory_writes.jsonl` and `retrievals.jsonl` keep the Phase 4 semantics. A
+`RetrievalLog` now lists one source-trajectory list per record; Phase 4 logs, which
+stored one bare ID per episode, still load. Skills live in a separate `SkillStore`
+(`skill_store_v1`), which cannot be opened as an episode store or the reverse.
