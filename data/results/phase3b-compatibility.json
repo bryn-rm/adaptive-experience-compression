@@ -1,0 +1,13 @@
+{
+  "code": "unsupported_value",
+  "http_status": 400,
+  "max_completion_tokens": 2048,
+  "message": "Unsupported value: 'temperature' does not support 0 with this model. Only the default (1) value is supported.",
+  "model": "gpt-5.6-terra",
+  "param": "temperature",
+  "purpose": "API compatibility probe only, excluded from pilot results",
+  "reasoning_effort": "low",
+  "seed": 0,
+  "temperature": 0,
+  "top_p": 1
+}

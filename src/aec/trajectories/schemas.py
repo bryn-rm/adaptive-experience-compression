@@ -15,6 +15,7 @@ class AgentStep(TrajectoryStep):
     valid_actions: list[str]
     valid_action: bool
     executed: bool
+    action_normalized: bool = False
     parse_error: str | None = None
     error_type: str | None = None
     wall_time: float = Field(ge=0)
@@ -33,6 +34,8 @@ class AgentStep(TrajectoryStep):
             raise ValueError("Executed actions need valid actions and resulting observations")
         if self.parse_error and (self.executed or self.valid_action):
             raise ValueError("A parse failure cannot execute an action")
+        if self.action_normalized and (not self.valid_action or self.output is None):
+            raise ValueError("Normalization must produce an admissible action from public output")
         return self
 
 

@@ -1,0 +1,17 @@
+{
+  "after_sha256": {
+    "attempts.jsonl": "a165cf704cf2d206a7238c68ac3429cc99c6c1c5f3e7bb9572e4348323e29ac5",
+    "metrics.json": "8aac255788ba91fafda23d44b4cda016992cc35b78493f51d464f29b758ac7f2",
+    "resolved_config.json": "44eb287bab5877bff75e36b2730f35d2249d6882ce8333b05c962587eb9df5a6",
+    "results.jsonl": "91f600036be7c4ee0dc0c547a962f65a2eeac132eff41758fe7233e4d1b1c191",
+    "trajectories.jsonl": "332b9ed342defb699b7bcff25c0911944b36f9dd82d131437f935de511c37df0"
+  },
+  "before_sha256": {
+    "attempts.jsonl": "a165cf704cf2d206a7238c68ac3429cc99c6c1c5f3e7bb9572e4348323e29ac5",
+    "metrics.json": "8aac255788ba91fafda23d44b4cda016992cc35b78493f51d464f29b758ac7f2",
+    "resolved_config.json": "44eb287bab5877bff75e36b2730f35d2249d6882ce8333b05c962587eb9df5a6",
+    "results.jsonl": "91f600036be7c4ee0dc0c547a962f65a2eeac132eff41758fe7233e4d1b1c191",
+    "trajectories.jsonl": "332b9ed342defb699b7bcff25c0911944b36f9dd82d131437f935de511c37df0"
+  },
+  "verification": "Completed run skipped without modifying canonical artifacts"
+}

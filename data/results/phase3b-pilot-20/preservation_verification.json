@@ -1,0 +1,34 @@
+{
+  "candidate_after_resume_sha256": {
+    "attempts.jsonl": "f4ca454f6d0b24db663141ec34165eb7af1a33a489ddbdc2b6410762e4806086",
+    "comparison.json": "6e634bb8da7da17b1bff35386151c5ac5faa8c56b4850e62c312da302c0aff23",
+    "metrics.json": "002eb0d88c05c50910959f582cf824e1264e1372e9a7b4da29b5ea6e1c7b4337",
+    "resolved_config.json": "9d52b6c39bb1f445b223037772985d1b4f2a2df22ee3870e57010c853fecc9cd",
+    "results.jsonl": "47c59553c226864aa84e4c5220a528cfd328f6f3affba20d414d46a9565b78f8",
+    "trajectories.jsonl": "88ef146e4687210e022bbec4516e22fbfe4f092b878fd9a0e881a7ff54d74988"
+  },
+  "candidate_before_resume_sha256": {
+    "attempts.jsonl": "f4ca454f6d0b24db663141ec34165eb7af1a33a489ddbdc2b6410762e4806086",
+    "comparison.json": "6e634bb8da7da17b1bff35386151c5ac5faa8c56b4850e62c312da302c0aff23",
+    "metrics.json": "002eb0d88c05c50910959f582cf824e1264e1372e9a7b4da29b5ea6e1c7b4337",
+    "resolved_config.json": "9d52b6c39bb1f445b223037772985d1b4f2a2df22ee3870e57010c853fecc9cd",
+    "results.jsonl": "47c59553c226864aa84e4c5220a528cfd328f6f3affba20d414d46a9565b78f8",
+    "trajectories.jsonl": "88ef146e4687210e022bbec4516e22fbfe4f092b878fd9a0e881a7ff54d74988"
+  },
+  "candidate_resume_unchanged": true,
+  "original_phase3_sha256": {
+    "configs/agent_smoke.yaml": "4c8fbc914efffb24635f2aae788c603fb63bf142d08b77f5d7b396b9cd47ce7b",
+    "configs/baseline_pilot.yaml": "7e56f13a955e24f5f216481326c4f395152e15e71f7b015eed3977200b6d8bf3",
+    "data/manifests/phase3-pilot-20.json": "2e1278a740be1509b07bda6f52f17829068831f82532e3a49d9ae13634948efb",
+    "data/results/phase3-pilot-20/attempts.jsonl": "a165cf704cf2d206a7238c68ac3429cc99c6c1c5f3e7bb9572e4348323e29ac5",
+    "data/results/phase3-pilot-20/inspection.md": "606c6ac58e3151cbfcff1cf1fff04768415bf92dd3daf620199a383774b31986",
+    "data/results/phase3-pilot-20/metrics.json": "8aac255788ba91fafda23d44b4cda016992cc35b78493f51d464f29b758ac7f2",
+    "data/results/phase3-pilot-20/resolved_config.json": "44eb287bab5877bff75e36b2730f35d2249d6882ce8333b05c962587eb9df5a6",
+    "data/results/phase3-pilot-20/results.jsonl": "91f600036be7c4ee0dc0c547a962f65a2eeac132eff41758fe7233e4d1b1c191",
+    "data/results/phase3-pilot-20/resume_verification.json": "a885730a9450ebd8d3d7fb8f5c98d7c8fff1da45f8fee4fc87e45ef3c4ddda6b",
+    "data/results/phase3-pilot-20/trajectories.jsonl": "332b9ed342defb699b7bcff25c0911944b36f9dd82d131437f935de511c37df0",
+    "src/aec/agents/actions.py": "b74f94bc5b7a8b12272dc64c4b803ed167732dc5a64aae9d5b2db52f9886f0d8",
+    "src/aec/agents/prompt.py": "95ab21eb9b91ef20606c8c968238313c76838f6c65281f79a01ddb7c4a3ce8e1"
+  },
+  "original_phase3_unchanged": true
+}

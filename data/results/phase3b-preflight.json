@@ -1,0 +1,71 @@
+{
+  "action": "go to fridge 1",
+  "action_normalized": false,
+  "config": {
+    "agent": {
+      "history_length": 4,
+      "llm": {
+        "max_completion_tokens": 2048,
+        "model_id": "gpt-5.6-terra",
+        "provider": "openai",
+        "reasoning_effort": "low",
+        "seed": 0,
+        "temperature": null,
+        "timeout_seconds": 60.0,
+        "top_p": 1.0
+      },
+      "prompt_version": "agent_v2"
+    },
+    "data_kind": "real_alfworld",
+    "environment": {
+      "backend_config": "configs/alfworld_backend.yaml",
+      "max_steps": 50,
+      "seed": 0,
+      "split": "eval_out_of_distribution"
+    },
+    "manifest": "data/manifests/phase3-pilot-20.json",
+    "output_dir": "data/results",
+    "run_id": "phase3b-pilot-20",
+    "selection_count": 20,
+    "selection_seed": 0
+  },
+  "initial": {
+    "observation": "-= Welcome to TextWorld, ALFRED! =-\n\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: heat some apple and put it in garbagecan.",
+    "task": {
+      "description": "-= Welcome to TextWorld, ALFRED! =-\n\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: heat some apple and put it in garbagecan.",
+      "metadata": {
+        "gamefile": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-GarbageCan-10/trial_T20190908_145143_820541/game.tw-pddl",
+        "split": "eval_out_of_distribution",
+        "task_family": "pick_heat_then_place_in_recep"
+      },
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-GarbageCan-10/trial_T20190908_145143_820541/game.tw-pddl"
+    }
+  },
+  "prompt": "Choose one available action to complete the task.\nReturn only the exact action on one line, without quotes or explanation.\nTask: \"-= Welcome to TextWorld, ALFRED! =-\\n\\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\\n\\nYour task is to: heat some apple and put it in garbagecan.\"\nRecent completed observation/action pairs (oldest first): []\nObservation: \"-= Welcome to TextWorld, ALFRED! =-\\n\\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\\n\\nYour task is to: heat some apple and put it in garbagecan.\"\nAvailable actions: [\"go to cabinet 1\", \"go to cabinet 2\", \"go to cabinet 3\", \"go to cabinet 4\", \"go to cabinet 5\", \"go to cabinet 6\", \"go to coffeemachine 1\", \"go to countertop 1\", \"go to countertop 2\", \"go to countertop 3\", \"go to drawer 1\", \"go to drawer 2\", \"go to drawer 3\", \"go to fridge 1\", \"go to garbagecan 1\", \"go to microwave 1\", \"go to shelf 1\", \"go to shelf 2\", \"go to shelf 3\", \"go to sinkbasin 1\", \"go to stoveburner 1\", \"go to stoveburner 2\", \"go to stoveburner 3\", \"go to stoveburner 4\", \"go to toaster 1\", \"help\", \"inventory\", \"look\"]\n",
+  "response": {
+    "finish_reason": "stop",
+    "model_id": "gpt-5.6-terra",
+    "response_id": "chatcmpl-EcuYx6SuytBiMVNo5mh9zvHIfXo8h",
+    "system_fingerprint": null,
+    "text": "go to fridge 1",
+    "token_usage": {
+      "completion_tokens": 25,
+      "prompt_tokens": 618
+    }
+  },
+  "result": {
+    "action": "go to fridge 1",
+    "done": false,
+    "observation": "You arrive at fridge 1. The fridge 1 is closed.",
+    "output": null,
+    "reward": 0.0,
+    "success": false,
+    "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-GarbageCan-10/trial_T20190908_145143_820541/game.tw-pddl",
+    "termination_reason": null,
+    "token_usage": {
+      "completion_tokens": 0,
+      "prompt_tokens": 0
+    }
+  },
+  "validation": "real ALFWorld/OpenAI single cycle; not baseline data"
+}

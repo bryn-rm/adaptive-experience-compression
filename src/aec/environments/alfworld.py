@@ -1,6 +1,7 @@
 """Single-episode adapter for ALFWorld's batched text environment."""
 
 from pathlib import Path
+import os
 from typing import Any, Literal
 
 import yaml
@@ -26,30 +27,54 @@ def _one(values: Any) -> Any:
     return values[0]
 
 
-def _create_backend(config: ALFWorldConfig) -> Any:
-    # Optional dependencies stay inside the integration layer, including imports.
-    try:
-        from alfworld.agents.environment.alfred_tw_env import AlfredTWEnv
-    except ImportError as exc:
-        raise RuntimeError("Install the optional 'alfworld' dependency to run text episodes") from exc
-
+def resolved_backend_settings(config: ALFWorldConfig, *, resolve_paths: bool = True) -> dict:
+    """Effective settings, including the adapter's existing overrides."""
     with config.backend_config.open(encoding="utf-8") as stream:
         settings = yaml.safe_load(stream)
     if not isinstance(settings, dict):
         raise ValueError("ALFWorld backend config must be a YAML mapping")
     if settings.get("env", {}).get("type") != "AlfredTWEnv":
         raise ValueError("Only AlfredTWEnv text mode is supported")
-    # DQN selects the non-expert wrapper path; no learning code is run.
+    for key in ("data_path", "eval_id_data_path", "eval_ood_data_path"):
+        if resolve_paths and key in settings.get("dataset", {}):
+            value = os.path.expandvars(settings["dataset"][key])
+            if "$" in value:
+                raise ValueError("Unresolved environment variable in dataset path")
+            settings["dataset"][key] = str(Path(value).resolve())
     settings.setdefault("general", {})["training_method"] = "dqn"
     settings["env"]["domain_randomization"] = False
-    # Let the adapter enforce the limit before the backend's own timeout.
     settings.setdefault("rl", {}).setdefault("training", {})[
         "max_nb_steps_per_episode"
     ] = config.max_steps + 1
-    owner = AlfredTWEnv(settings, train_eval=config.split)
+    return settings
+
+
+def _create_owner(config: ALFWorldConfig) -> Any:
+    # Optional dependencies stay inside the integration layer, including imports.
+    try:
+        from alfworld.agents.environment.alfred_tw_env import AlfredTWEnv
+    except ImportError as exc:
+        raise RuntimeError("Install the optional 'alfworld' dependency to run text episodes") from exc
+
+    owner = AlfredTWEnv(resolved_backend_settings(config, resolve_paths=False), train_eval=config.split)
     if not owner.game_files:
         raise ValueError("No ALFWorld games found; check task data paths and split")
     owner.game_files.sort()
+    return owner
+
+
+def available_task_ids(config: ALFWorldConfig) -> tuple[str, ...]:
+    """Upstream eligible tasks, discovered before any acting outcomes exist."""
+    return tuple(_create_owner(config).game_files)
+
+
+def _create_backend(config: ALFWorldConfig, task_id: str | None = None) -> Any:
+    owner = _create_owner(config)
+    if task_id is not None:
+        if task_id not in owner.game_files:
+            raise ValueError("Manifest task is not available in the configured split")
+        owner.game_files = [task_id]
+        owner.num_games = 1
     backend = owner.init_env(batch_size=1)
     backend.seed(config.seed)
     return backend
@@ -62,9 +87,11 @@ class ALFWorldAdapter:
     A backend terminal result takes precedence if it coincides with max_steps.
     """
 
-    def __init__(self, config: ALFWorldConfig, *, backend: Any = None):
+    def __init__(self, config: ALFWorldConfig, *, backend: Any = None,
+                 task_id: str | None = None):
         self.config = config.model_copy(deep=True)
-        self._backend = backend if backend is not None else _create_backend(self.config)
+        self._backend = backend if backend is not None else _create_backend(self.config, task_id)
+        self._expected_task_id = task_id
         self._task: Task | None = None
         self._actions: list[str] = []
         self._steps = 0
@@ -85,6 +112,8 @@ class ALFWorldAdapter:
         gamefile = _one(infos["extra.gamefile"])
         if not isinstance(gamefile, str) or not gamefile:
             raise ValueError("ALFWorld must provide extra.gamefile task identity")
+        if self._expected_task_id is not None and gamefile != self._expected_task_id:
+            raise ValueError("Reset task does not match the manifest task")
         path = Path(gamefile)
         metadata = {"gamefile": gamefile, "split": self.config.split}
         # Standard layout: <family>-<objects...>/<trial>/game.tw-pddl.

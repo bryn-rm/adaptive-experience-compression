@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from aec.agents.actions import ActionParseError, parse_action
 from aec.agents.prompt import build_prompt
+from aec.agents.v2 import ObservationAction, build_prompt_v2, parse_action_v2
 from aec.config import AgentConfig
 from aec.environments.alfworld import ALFWorldAdapter
 from aec.llm import LLMClient
@@ -48,10 +49,16 @@ def run_episode(
             # This acting setup requires admissible actions; never invent a fallback.
             reason = "no_valid_actions"
             break
-        prompt = build_prompt(task, observation, actions)
+        if settings.prompt_version == "agent_v2":
+            history = [ObservationAction(s.observation, s.action) for s in steps if s.executed]
+            prompt = build_prompt_v2(task, observation, actions, history,
+                                     history_length=settings.history_length)
+        else:
+            prompt = build_prompt(task, observation, actions)
         step_started = clock()
         response = None
         action = ""
+        action_normalized = False
         parse_error = None
         error_type = None
         result = None
@@ -64,7 +71,11 @@ def run_episode(
             try:
                 if response.finish_reason != "stop":
                     raise ActionParseError("Provider did not finish a complete action response")
-                action = parse_action(response.text, actions)
+                if settings.prompt_version == "agent_v2":
+                    parsed = parse_action_v2(response.text, actions)
+                    action, action_normalized = parsed.action, parsed.normalized
+                else:
+                    action = parse_action(response.text, actions)
             except ActionParseError as exc:
                 parse_error = str(exc)
                 reason = "parse_error"
@@ -86,6 +97,7 @@ def run_episode(
             reward=result.reward if result else 0,
             done=result.done if result else True,
             valid_actions=actions, valid_action=bool(action), executed=result is not None,
+            action_normalized=action_normalized,
             parse_error=parse_error, error_type=error_type,
             wall_time=clock() - step_started,
             token_usage=response.token_usage if response else TokenUsage(),

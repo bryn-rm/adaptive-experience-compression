@@ -142,3 +142,177 @@ The offline test suite runs ten distinct scripted tasks, validates every artifac
 and covers successful episodes, environment failures, parse aborts, token/timing
 metadata, prompt versioning, provider conversion, and append-only recording. This
 smoke script adds no manifest, resumability, metrics pipeline, or Phase 3 baseline.
+
+## Phase 3: reproducible no-memory baseline
+
+The live stack was validated with Python **3.12.3**, ALFWorld **0.4.2**,
+TextWorld **1.7.0**, and OpenAI SDK **2.54.0**. See `PHASE_3_SUMMARY.md` for
+real pilot results and the suitability gate. The Phase 1/2 notes above describe
+what was unverified at those earlier phases. `agent_v1`, parsing, model settings,
+and the acting loop remain unchanged.
+
+Create a Python 3.12 environment and install the recorded dependencies:
+
+```sh
+python3.12 -m venv .venv-alfworld
+.venv-alfworld/bin/python -m pip install -r configs/phase3-pilot-requirements.txt
+.venv-alfworld/bin/python -m pip install -e '.[dev,alfworld,openai]'
+```
+
+If the system lacks `ensurepip`, an existing pip can provision a venv created
+with `python3.12 -m venv --without-pip .venv-alfworld`:
+` .venv/bin/python -m pip --python .venv-alfworld/bin/python install -r configs/phase3-pilot-requirements.txt`,
+followed by the same pip invocation with `install -e '.[dev,alfworld,openai]'`.
+No upstream code was patched. No visual/THOR components are needed.
+
+Download and extract these official archives into `data/alfworld`:
+
+- [ALFWorld task JSON](https://github.com/alfworld/alfworld/releases/download/0.2.2/json_2.1.1_json.zip)
+- [Generated text games](https://github.com/alfworld/alfworld/releases/download/0.4.2/json_2.1.3_tw-pddl.zip)
+
+Both archives contain `json_2.1.1/...` paths. Set `ALFWORLD_DATA` to the **absolute**
+path of `data/alfworld` and configure `OPENAI_API_KEY` in the environment. Keep
+those task paths stable across policy comparisons; canonical task IDs retain the
+existing gamefile semantics. Credentials are never written into artifacts.
+
+From the repository root:
+
+```sh
+export ALFWORLD_DATA="$PWD/data/alfworld"
+# Optional live preflight, with a NEW output path (one model call):
+.venv-alfworld/bin/python scripts/validate_live_stack.py --output /tmp/new-preflight.json
+# Only for a NEW manifest path; an existing manifest is never overwritten:
+.venv-alfworld/bin/python scripts/run_baseline.py manifest --config configs/baseline_pilot.yaml
+# Execute, or safely resume the SAME run:
+.venv-alfworld/bin/python scripts/run_baseline.py run --config configs/baseline_pilot.yaml
+.venv-alfworld/bin/python -m pytest -q
+```
+
+The included pilot manifest is already fixed; do not recreate it. For a separate
+experiment, copy the YAML, set a new run ID, and explicitly choose whether to reuse
+the manifest or create a new one. The runner never creates/replaces/selects tasks
+while acting. Manifest creation samples without replacement from sorted upstream
+eligible game IDs using `selection_seed` and `selection_count`; selection happens
+before outcomes. Upstream eligibility uses its distributed solvability metadata.
+The immutable manifest contains IDs in execution order, split, creation/version
+metadata, candidate-set hash, and per-game SHA-256 hashes. The adapter restricts
+each fresh backend to exactly one requested game and checks its reset identity.
+
+`data/results/<run_id>/` contains:
+
+- `resolved_config.json`: frozen config, complete manifest and its hash, expanded
+  backend settings and backend-file hash, Python/package versions, source-code
+  hash. Nested agent settings include model ID, prompt version, decoding settings,
+  provider seed, and timeout; environment settings include its separate seed.
+- `attempts.jsonl`: durable task/run intents written before environment/provider
+  construction; timestamps indicate when attempts began.
+- `trajectories.jsonl`: one existing `AgentTrajectory` per attempted task, including
+  aborted trajectories. Existing per-step response IDs/models/fingerprints remain.
+- `results.jsonl`: one typed task result linked to the canonical trajectory,
+  manifest, and resolved config by IDs/hashes.
+- `metrics.json`: immutable aggregate derived from the final task results.
+
+Resume validates all artifacts and rejects config, source, dependency, manifest,
+backend, or task-content drift. It skips **all** committed task/run results,
+including failures and aborts. A trajectory committed before its result is reused
+without another call. A durable attempt with no trajectory becomes an `interrupted`
+abort, with unknown usage/time; it is never automatically replayed. Setup/reset or
+unexpected runtime exceptions without a durable episode produce a zero-step aborted
+artifact explicitly marked as lacking observations. Their zero reward/success/usage
+fields are placeholders; task results exclude them from environment scoring.
+Any interactions lost in a hard interruption are unrecoverable with the unchanged
+Phase 2 end-of-episode recorder. To retry, explicitly use a new run ID and retain
+the original attempt for analysis.
+
+A process lock prevents concurrent writers. JSONL is append-only and flushed to
+disk. Immutable JSON files publish without replacement. Incomplete or malformed
+raw files stop the run for inspection; no automatic truncation or repair occurs.
+Storage failures propagate rather than becoming misleading environment outcomes.
+This is a local single-writer runner, not a distributed execution system.
+
+Metric definitions:
+
+- `completed_tasks` includes only successful environment completion and completed
+  environment failure (including the configured step limit with known success).
+- `aborted_tasks` includes every other trajectory. Setup/provider/runtime failure
+  counts are **subsets** of aborts, not additional tasks. `parse_failures` counts
+  failed parses and performs no fallback action.
+- `success_rate` is successes / completed tasks; `abort_rate` is aborts / attempted
+  tasks. Undefined rates are JSON `null`.
+- Mean/median steps count confirmed executed actions over completed tasks only.
+  Mean reward uses the last cumulative environment score over completed tasks,
+  never a sum of cumulative rewards and never an aborted reward placeholder.
+- Prompt/completion tokens sum observed provider usage. When `usage_known=false`,
+  these totals are **lower bounds**, not complete billing totals.
+  `unknown_usage_tasks` reports how many task totals are incomplete. The existing
+  provider rejects missing usage and the acting loop records a provider abort.
+- Wall time sums recorded episode durations (reset and acting, excluding ordinary
+  environment/client construction, teardown, artifact writes, and downtime).
+  Setup/runtime failures record elapsed time until the exception. Interrupted
+  attempts contribute zero with `wall_time_known=false`, making the sum incomplete.
+
+Tests inject deterministic environments and LLMs and need no credentials or task
+archive. Injected factories require `data_kind: fake_verification`; their outcomes
+cannot be labeled as real ALFWorld data. There is no memory, retrieval, prompt
+tuning, model fallback, or Phase 4 implementation in this pipeline.
+
+## Phase 3b: acting setup calibration
+
+`configs/baseline_calibration.yaml` defines a separate baseline candidate:
+`agent_v2`, `gpt-5.6-terra`, low reasoning effort, and a four-pair within-episode
+history window. It reuses the **exact** Phase 3 manifest, task order, environment
+settings, scoring, seeds, and 50-step limit. This is a baseline redesign, not a
+single-variable causal ablation. Phase 3 diagnostic data remains unchanged and
+must not be pooled with the new candidate. See `PHASE_3B_SUMMARY.md` for outcomes
+and the suitability decision; Phase 4 requires a separate decision.
+
+`agent_v2` adds the most recent `history_length` completed observation/action
+pairs, oldest first, to the original task, current observation, and admissible
+actions. Each pair contains the observation **before** the confirmed action and
+the action itself. The following pair/current observation supplies subsequent
+feedback. Only executed steps enter history. Raw model output, provider reasoning,
+and prior prompts are not copied into history. The window resets for each task;
+there is no persistent cross-task memory or provider conversation state.
+
+The v2 parser trims outer whitespace, removes at most one exact `Action: ` prefix,
+and removes at most one matching pair of straight single/double quotes. It then
+requires exact membership in the current admissible actions. It does not accept
+case changes, fuzzy matches, multiline/code-fenced responses, explanatory suffixes,
+recursive wrappers, fallback actions, or action retries. `action_normalized` on
+each step records whether an accepted action differs from the public response,
+including whitespace changes. `normalized_actions` counts these accepted actions
+in task results and metrics. `task_parse_failures` counts affected tasks separately
+from individual parse events. The original `agent_v1` prompt and strict parser
+remain intact; old artifacts load with normalization flags defaulting to false.
+
+The [model documentation](https://developers.openai.com/api/docs/models/gpt-5.6-terra)
+lists low reasoning effort. The existing Chat Completions adapter sends it as
+`reasoning_effort`, and continues to retain only public text and usage metadata.
+The live API rejected temperature 0 for this model; the calibration config
+explicitly sets `temperature: null` to omit it and use the provider default.
+The other retained sampling settings are `top_p: 1` and `seed: 0`. The completion
+budget is 2,048 tokens to accommodate the reasoning model's internal tokens and
+public action, instead of the old non-reasoning model's 128-token cap. These
+model-interface adjustments are recorded as part of the redesign. There is no
+silent parameter/model fallback. Completion usage includes the provider's full
+completion-token accounting; no hidden reasoning content is requested or stored.
+
+Run from the repository root with the existing Python 3.12 environment and
+credentials. Do **not** regenerate the manifest:
+
+```sh
+export ALFWORLD_DATA="$PWD/data/alfworld"
+# Optional one-cycle check; choose a new output path:
+.venv-alfworld/bin/python scripts/validate_live_stack.py --baseline-config --config configs/baseline_calibration.yaml --output /tmp/phase3b-new-preflight.json
+# Execute or resume the new candidate only:
+.venv-alfworld/bin/python scripts/run_baseline.py run --config configs/baseline_calibration.yaml
+# After both runs finish; output must not already exist:
+.venv-alfworld/bin/python scripts/compare_baselines.py --previous data/results/phase3-pilot-20 --candidate data/results/phase3b-pilot-20 --output /tmp/phase3b-new-comparison.json
+```
+
+The comparison validates complete one-to-one task order, identical manifests and
+environment settings, and canonical result/trajectory consistency. It reports
+separate aggregates and paired task outcomes with both source trajectory IDs.
+It explicitly labels the comparison as descriptive and non-causal. The old run's
+source/config hashes intentionally differ after this redesign; the old run is
+preserved for read-only comparison, not resumed using changed acting source code.

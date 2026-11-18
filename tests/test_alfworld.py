@@ -216,3 +216,37 @@ def test_direct_imports_stay_in_environment_layer():
                 modules = [node.module or ""]
             if any(name.split(".")[0] in {"alfworld", "textworld"} for name in modules):
                 assert path.is_relative_to("src/aec/environments")
+
+
+def test_manifest_pins_backend_and_checks_reset_identity(monkeypatch):
+    import aec.environments.alfworld as module
+    backend = Backend()
+    captured = {}
+    class Owner:
+        game_files = ["a", "b"]
+        def init_env(self, batch_size):
+            captured["files"] = self.game_files.copy()
+            captured["count"] = self.num_games
+            return backend
+    monkeypatch.setattr(module, "_create_owner", lambda config: Owner())
+    backend.seed = lambda seed: None
+    config = ALFWorldConfig(backend_config="unused")
+    env = ALFWorldAdapter(config, task_id="b")
+    assert captured == {"files": ["b"], "count": 1}
+    with pytest.raises(ValueError, match="manifest"):
+        env.reset()
+    backend.infos["extra.gamefile"] = ["b"]
+    assert env.reset().task.task_id == "b"
+    with pytest.raises(ValueError, match="not available"):
+        ALFWorldAdapter(config, task_id="missing")
+
+
+def test_resolved_environment_paths_and_overrides(monkeypatch, tmp_path):
+    from aec.environments.alfworld import resolved_backend_settings
+    monkeypatch.setenv("ALFWORLD_DATA", str(tmp_path))
+    settings = resolved_backend_settings(ALFWorldConfig(backend_config="configs/alfworld_backend.yaml"))
+    assert settings["dataset"]["eval_ood_data_path"] == str(tmp_path / "json_2.1.1/valid_unseen")
+    assert settings["rl"]["training"]["max_nb_steps_per_episode"] == 51
+    monkeypatch.delenv("ALFWORLD_DATA")
+    with pytest.raises(ValueError, match="Unresolved"):
+        resolved_backend_settings(ALFWorldConfig(backend_config="configs/alfworld_backend.yaml"))

@@ -3,8 +3,13 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .venv/
+.venv-alfworld/
+data/alfworld/
+data/results/**/.lock
 build/
 dist/
 
 # Local temporary implementation summaries
 /PHASE_*_SUMMARY.md
+!/PHASE_3_SUMMARY.md
+!/PHASE_3B_SUMMARY.md

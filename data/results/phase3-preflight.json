@@ -1,0 +1,63 @@
+{
+  "validation": "real ALFWorld/OpenAI single cycle; not baseline data",
+  "config": {
+    "environment": {
+      "backend_config": "configs/alfworld_backend.yaml",
+      "split": "eval_out_of_distribution",
+      "max_steps": 50,
+      "seed": 0
+    },
+    "agent": {
+      "prompt_version": "agent_v1",
+      "llm": {
+        "provider": "openai",
+        "model_id": "gpt-4o-mini-2024-07-18",
+        "temperature": 0.0,
+        "top_p": 1.0,
+        "max_completion_tokens": 128,
+        "seed": 0,
+        "timeout_seconds": 60.0
+      }
+    },
+    "log_level": "INFO"
+  },
+  "initial": {
+    "task": {
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-Fridge-10/trial_T20190906_182353_418140/game.tw-pddl",
+      "description": "-= Welcome to TextWorld, ALFRED! =-\n\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a hot apple in fridge.",
+      "metadata": {
+        "gamefile": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-Fridge-10/trial_T20190906_182353_418140/game.tw-pddl",
+        "split": "eval_out_of_distribution",
+        "task_family": "pick_heat_then_place_in_recep"
+      }
+    },
+    "observation": "-= Welcome to TextWorld, ALFRED! =-\n\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\n\nYour task is to: put a hot apple in fridge."
+  },
+  "prompt": "Choose one available action to complete the task.\nReturn only the exact action on one line, without quotes or explanation.\nTask: \"-= Welcome to TextWorld, ALFRED! =-\\n\\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\\n\\nYour task is to: put a hot apple in fridge.\"\nObservation: \"-= Welcome to TextWorld, ALFRED! =-\\n\\nYou are in the middle of a room. Looking quickly around you, you see a cabinet 6, a cabinet 5, a cabinet 4, a cabinet 3, a cabinet 2, a cabinet 1, a coffeemachine 1, a countertop 3, a countertop 2, a countertop 1, a drawer 3, a drawer 2, a drawer 1, a fridge 1, a garbagecan 1, a microwave 1, a shelf 3, a shelf 2, a shelf 1, a sinkbasin 1, a stoveburner 4, a stoveburner 3, a stoveburner 2, a stoveburner 1, and a toaster 1.\\n\\nYour task is to: put a hot apple in fridge.\"\nAvailable actions: [\"go to cabinet 1\", \"go to cabinet 2\", \"go to cabinet 3\", \"go to cabinet 4\", \"go to cabinet 5\", \"go to cabinet 6\", \"go to coffeemachine 1\", \"go to countertop 1\", \"go to countertop 2\", \"go to countertop 3\", \"go to drawer 1\", \"go to drawer 2\", \"go to drawer 3\", \"go to fridge 1\", \"go to garbagecan 1\", \"go to microwave 1\", \"go to shelf 1\", \"go to shelf 2\", \"go to shelf 3\", \"go to sinkbasin 1\", \"go to stoveburner 1\", \"go to stoveburner 2\", \"go to stoveburner 3\", \"go to stoveburner 4\", \"go to toaster 1\", \"help\", \"inventory\", \"look\"]\n",
+  "response": {
+    "text": "go to fridge 1",
+    "model_id": "gpt-4o-mini-2024-07-18",
+    "token_usage": {
+      "prompt_tokens": 602,
+      "completion_tokens": 5
+    },
+    "finish_reason": "stop",
+    "response_id": "chatcmpl-Ectw4OfqXWMFfcTPyQdY9Vx0uKuQJ",
+    "system_fingerprint": "fp_6827d2409b"
+  },
+  "action": "go to fridge 1",
+  "result": {
+    "observation": "You arrive at fridge 1. The fridge 1 is closed.",
+    "action": "go to fridge 1",
+    "output": null,
+    "reward": 0.0,
+    "done": false,
+    "token_usage": {
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-Fridge-10/trial_T20190906_182353_418140/game.tw-pddl",
+    "termination_reason": null,
+    "success": false
+  }
+}

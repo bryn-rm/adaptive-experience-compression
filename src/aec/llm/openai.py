@@ -23,15 +23,18 @@ class OpenAIClient:
         self._client = client
 
     def generate(self, prompt: str, config: LLMConfig) -> LLMResponse:
+        # Explicit null means omit a parameter, not silently substitute a value.
+        # Model-specific parameter choices stay visible in resolved config.
+        optional = {key: value for key, value in {
+            "temperature": config.temperature, "top_p": config.top_p,
+            "seed": config.seed, "reasoning_effort": config.reasoning_effort,
+        }.items() if value is not None}
         response = self._client.chat.completions.create(
             model=config.model_id,
             messages=[{"role": "user", "content": prompt}],
-            temperature=config.temperature,
-            top_p=config.top_p,
             max_completion_tokens=config.max_completion_tokens,
-            seed=config.seed,
             timeout=config.timeout_seconds,
-            n=1, store=False,
+            n=1, store=False, **optional,
         )
         if response.usage is None or len(response.choices) != 1:
             raise ValueError("Provider must return usage and exactly one completion")

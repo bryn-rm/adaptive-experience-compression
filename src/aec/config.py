@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ALFWorldConfig(BaseModel):
@@ -21,18 +21,26 @@ class LLMConfig(BaseModel):
 
     provider: Literal["openai"] = "openai"
     model_id: str = Field(min_length=1)
-    temperature: float = Field(default=0, ge=0, le=2)
-    top_p: float = Field(default=1, gt=0, le=1)
+    temperature: float | None = Field(default=0, ge=0, le=2)
+    top_p: float | None = Field(default=1, gt=0, le=1)
     max_completion_tokens: int = Field(default=128, ge=1, strict=True)
-    seed: int = 0
+    seed: int | None = 0
+    reasoning_effort: Literal["none", "low", "medium", "high", "xhigh", "max"] | None = None
     timeout_seconds: float = Field(default=60, gt=0)
 
 
 class AgentConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    prompt_version: Literal["agent_v1"] = "agent_v1"
+    prompt_version: Literal["agent_v1", "agent_v2"] = "agent_v1"
+    history_length: int = Field(default=0, ge=0, strict=True)
     llm: LLMConfig
+
+    @model_validator(mode="after")
+    def versioned_history(self):
+        if self.prompt_version == "agent_v1" and self.history_length != 0:
+            raise ValueError("agent_v1 has no interaction history")
+        return self
 
 
 class Config(BaseModel):
