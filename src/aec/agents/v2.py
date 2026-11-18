@@ -19,15 +19,21 @@ class ObservationAction:
 
 
 def build_prompt_v2(task: Task, observation: str, valid_actions: list[str],
-                    history: Sequence[ObservationAction], *, history_length: int) -> str:
+                    history: Sequence[ObservationAction], *, history_length: int,
+                    memory_section: str | None = None) -> str:
+    """`memory_section` is a pre-rendered fixed-format line; None leaves agent_v2 unchanged."""
     if isinstance(history_length, bool) or not isinstance(history_length, int) or history_length < 0:
         raise ValueError("history_length must be a non-negative integer")
+    if memory_section is not None and (not memory_section.endswith("\n")
+                                       or "\n" in memory_section[:-1]):
+        raise ValueError("memory_section must be exactly one newline-terminated line")
     recent = history[-history_length:] if history_length else []
     pairs = [{"observation": pair.observation, "action": pair.action} for pair in recent]
     return (
         "Choose one available action to complete the task.\n"
         "Return only the exact action on one line, without quotes or explanation.\n"
         f"Task: {json.dumps(task.description, ensure_ascii=False)}\n"
+        f"{memory_section or ''}"
         "Recent completed observation/action pairs (oldest first): "
         f"{json.dumps(pairs, ensure_ascii=False)}\n"
         f"Observation: {json.dumps(observation, ensure_ascii=False)}\n"

@@ -12,13 +12,15 @@ from uuid import uuid4
 from aec.agents.runner import run_episode
 from aec.environments.alfworld import ALFWorldAdapter, resolved_backend_settings
 from aec.llm.openai import OpenAIClient
+from aec.memory.embeddings import OpenAIEmbedder
 from aec.schemas import Task, TokenUsage
 from aec.trajectories.recorder import TrajectoryRecorder
 from aec.trajectories.schemas import AgentTrajectory
 from aec.experiments.artifacts import (
-    Attempt, BaselineConfig, TaskManifest, TaskResult, append_row, digest,
+    Attempt, BaselineConfig, RetrievalLog, TaskManifest, TaskResult, append_row, digest,
     file_hash, read_rows, utc_now, write_once,
 )
+from aec.experiments.memory import EpisodicPolicy, token_counter
 
 
 def resolve_run(config: BaselineConfig, manifest: TaskManifest) -> dict:
@@ -29,7 +31,8 @@ def resolve_run(config: BaselineConfig, manifest: TaskManifest) -> dict:
             raise ValueError("Manifest task content has changed")
     source_root = Path(__file__).resolve().parents[1]
     return dict(
-        version="baseline_v1", policy="no_memory", config=config.model_dump(mode="json"),
+        version="baseline_v1", policy=config.memory.policy if config.memory else "no_memory",
+        config=config.model_dump(mode="json"),
         manifest=manifest.model_dump(mode="json"),
         manifest_sha256=digest(manifest.model_dump(mode="json")),
         environment_backend_sha256=file_hash(config.environment.backend_config),
@@ -41,7 +44,8 @@ def resolve_run(config: BaselineConfig, manifest: TaskManifest) -> dict:
     )
 
 
-def task_result(trajectory: AgentTrajectory, resolved: dict) -> TaskResult:
+def task_result(trajectory: AgentTrajectory, resolved: dict,
+                retrieval: RetrievalLog | None = None) -> TaskResult:
     t = trajectory
     if t.status == "completed":
         outcome = "success" if t.success else "environment_failure"
@@ -62,6 +66,7 @@ def task_result(trajectory: AgentTrajectory, resolved: dict) -> TaskResult:
         prompt_tokens=t.prompt_tokens, completion_tokens=t.completion_tokens,
         usage_known=not lost and all(s.usage_known for s in t.steps),
         wall_time=t.wall_time, wall_time_known=t.termination_reason != "interrupted",
+        retrieved_memory_ids=[r.memory_id for r in retrieval.records] if retrieval else [],
     )
 
 
@@ -141,10 +146,13 @@ class CheckedRecorder(TrajectoryRecorder):
 
 
 def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
-                 llm_factory=OpenAIClient) -> dict:
+                 llm_factory=OpenAIClient, embedder_factory=OpenAIEmbedder,
+                 count_tokens=None) -> dict:
+    """Shared runner for every memory policy; `config.memory=None` is no memory."""
     config = config.model_copy(deep=True)
     if config.data_kind != "fake_verification" and (
         env_factory is not ALFWorldAdapter or llm_factory is not OpenAIClient
+        or embedder_factory is not OpenAIEmbedder or count_tokens is not None
     ):
         raise ValueError("Injected environments/providers require fake_verification labeling")
     manifest = TaskManifest.model_validate_json(config.manifest.read_text())
@@ -155,7 +163,8 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
     with (directory / ".lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         resolved_path = directory / "resolved_config.json"
-        if resolved_path.exists():
+        fresh = not resolved_path.exists()
+        if not fresh:
             if json.loads(resolved_path.read_text()) != resolved:
                 raise ValueError("Resolved configuration changed; use a new run ID")
         else:
@@ -172,13 +181,26 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
             raise ValueError("Artifacts have missing attempt/trajectory provenance")
         if len({t.trajectory_id for t in trajectories.values()}) != len(trajectories):
             raise ValueError("Duplicate trajectory ID")
+        policy = None
+        if config.memory is not None:
+            policy = EpisodicPolicy(
+                config.memory, config.run_id, directory, manifest.task_ids, fresh=fresh,
+                embedder=embedder_factory(), llm_factory=llm_factory,
+                count_tokens=count_tokens or token_counter(config.memory.tokenizer),
+            )
+            if not policy.retrievals.keys() <= attempts.keys():
+                raise ValueError("Retrieval logged without an attempt")
+        retrievals = policy.retrievals if policy else {}
         for task_id, trajectory in trajectories.items():
             if (trajectory.agent_config != config.agent
                 or trajectory.environment_config != config.environment
                 or trajectory.environment_backend_sha256 != resolved["environment_backend_sha256"]):
                 raise ValueError("Stored trajectory configuration mismatch")
-            if task_id in results and results[task_id] != task_result(trajectory, resolved):
-                raise ValueError("Stored task result differs from canonical trajectory")
+            if task_id in results:
+                if results[task_id] != task_result(trajectory, resolved, retrievals.get(task_id)):
+                    raise ValueError("Stored task result differs from canonical trajectory")
+                if policy:
+                    policy.check_complete(trajectory)
         for task_id in manifest.task_ids:
             if task_id in results:
                 continue
@@ -208,8 +230,9 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
                         def append(self, value):
                             pass
                     try:
-                        trajectory = run_episode(env, llm, config.agent, Capture(),
-                                                 run_id=config.run_id)
+                        trajectory = run_episode(
+                            env, llm, config.agent, Capture(), run_id=config.run_id,
+                            retrieve_memory=policy.retriever(task_id) if policy else None)
                     except Exception as exc:
                         trajectory = failure_trajectory(config, resolved, task_id, "runtime_error",
                                                         perf_counter() - started, type(exc).__name__)
@@ -218,7 +241,9 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
                     for resource in (env, llm):
                         if resource is not None:
                             resource.close()
-            result = task_result(trajectory, resolved)
+            if policy:
+                policy.record_episode(trajectory)  # Finishes before the result commits.
+            result = task_result(trajectory, resolved, retrievals.get(task_id))
             append_row(results_path, result)
             results[task_id] = result
             print(f"{len(results)}/{len(manifest.task_ids)} {result.outcome} "
@@ -226,6 +251,10 @@ def run_baseline(config: BaselineConfig, *, env_factory=ALFWorldAdapter,
         metrics = aggregate(list(results.values()))
         metrics.update(manifest_id=manifest.manifest_id,
                        resolved_config_sha256=digest(resolved), run_id=config.run_id)
+        if policy:
+            metrics["memory"] = policy.metrics()
+            policy.close()
+            policy.embedder.close()
         metrics_path = directory / "metrics.json"
         if metrics_path.exists():
             if json.loads(metrics_path.read_text()) != metrics:

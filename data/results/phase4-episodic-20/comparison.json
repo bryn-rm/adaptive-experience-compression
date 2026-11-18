@@ -1,0 +1,462 @@
+{
+  "candidate_agent": {
+    "history_length": 4,
+    "llm": {
+      "max_completion_tokens": 2048,
+      "model_id": "gpt-5.6-terra",
+      "provider": "openai",
+      "reasoning_effort": "low",
+      "seed": 0,
+      "temperature": null,
+      "timeout_seconds": 60.0,
+      "top_p": 1.0
+    },
+    "prompt_version": "agent_v2"
+  },
+  "candidate_config_sha256": "9c8399ac5e012d834e5f66a6449b161d74d5118f9044f56158306d714a41a854",
+  "candidate_metrics": {
+    "abort_rate": 0.1,
+    "aborted_tasks": 2,
+    "attempted_tasks": 20,
+    "completed_tasks": 18,
+    "completion_tokens": 13738,
+    "data_kind": "real_alfworld",
+    "environment_failures": 2,
+    "mean_reward": 0.8888888888888888,
+    "mean_steps": 16.833333333333332,
+    "median_steps": 10.5,
+    "normalized_actions": 0,
+    "parse_failures": 2,
+    "prompt_tokens": 356870,
+    "provider_failures": 0,
+    "runtime_failures": 0,
+    "setup_failures": 0,
+    "success_rate": 0.8888888888888888,
+    "successful_tasks": 16,
+    "task_parse_failures": 2,
+    "unknown_usage_tasks": 0,
+    "usage_known": true,
+    "wall_time": 587.9114591469997,
+    "wall_time_known": true
+  },
+  "candidate_policy": "episodic",
+  "interpretation": "Descriptive paired comparison of memory policies with an identical acting setup. Runs executed separately (provider drift possible), one seed: not a causal estimate of memory benefit.",
+  "manifest_id": "alfworld-26a02eb5d85c76bb8171d23d438b793fabda50667afb9cdcdd220a94265481a5",
+  "manifest_sha256": "7333f8b39e467a4eae3e970ae759ab8f068444fd60f46220986761b55ef2e596",
+  "previous_agent": {
+    "history_length": 4,
+    "llm": {
+      "max_completion_tokens": 2048,
+      "model_id": "gpt-5.6-terra",
+      "provider": "openai",
+      "reasoning_effort": "low",
+      "seed": 0,
+      "temperature": null,
+      "timeout_seconds": 60.0,
+      "top_p": 1.0
+    },
+    "prompt_version": "agent_v2"
+  },
+  "previous_config_sha256": "8027806500a1760ff3a7b1127ba6664cc21df9c2883ba3d7e33e1ab3f7609303",
+  "previous_metrics": {
+    "abort_rate": 0.0,
+    "aborted_tasks": 0,
+    "attempted_tasks": 20,
+    "completed_tasks": 20,
+    "completion_tokens": 16803,
+    "data_kind": "real_alfworld",
+    "environment_failures": 4,
+    "mean_reward": 0.8,
+    "mean_steps": 22.1,
+    "median_steps": 18.0,
+    "normalized_actions": 0,
+    "parse_failures": 0,
+    "prompt_tokens": 272446,
+    "provider_failures": 0,
+    "runtime_failures": 0,
+    "setup_failures": 0,
+    "success_rate": 0.8,
+    "successful_tasks": 16,
+    "task_parse_failures": 0,
+    "unknown_usage_tasks": 0,
+    "usage_known": true,
+    "wall_time": 551.4653631110018,
+    "wall_time_known": true
+  },
+  "previous_policy": "no_memory",
+  "tasks": [
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 46,
+      "candidate_trajectory_id": "b76edb1e-cbab-4293-943f-8e86176b998c",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 32,
+      "previous_trajectory_id": "e3df8df3-ba12-4867-b1df-92bcefb4ca0e",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Apple-None-GarbageCan-10/trial_T20190908_145143_820541/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 25,
+      "candidate_trajectory_id": "277ff457-c700-4318-81d3-b8726e0ffc0f",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 19,
+      "previous_trajectory_id": "a5215508-a306-4650-8f0b-0919077e4007",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Mug-None-Cabinet-10/trial_T20190909_021200_669381/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 5,
+      "candidate_trajectory_id": "4505c1e0-183e-4453-9d7a-8951440300c6",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 6,
+      "previous_trajectory_id": "6331fb13-b5ea-41be-8491-d610b08a4fcf",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/look_at_obj_in_light-CD-None-DeskLamp-308/trial_T20190908_141958_463362/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "environment_failure",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c",
+        "episode-4505c1e0-183e-4453-9d7a-8951440300c6"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 50,
+      "candidate_trajectory_id": "f59c8c65-edf0-4470-9348-29dad1c694f5",
+      "previous_outcome": "environment_failure",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 50,
+      "previous_trajectory_id": "9b41754f-b175-4e95-aa80-9d42075ff8a4",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_clean_then_place_in_recep-SoapBar-None-Cabinet-424/trial_T20190908_215019_162873/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c",
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-4505c1e0-183e-4453-9d7a-8951440300c6"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 9,
+      "candidate_trajectory_id": "e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 18,
+      "previous_trajectory_id": "25af2b47-96e7-4aae-8df7-89e826c3f204",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_two_obj_and_place-SoapBar-None-GarbageCan-424/trial_T20190909_064053_839817/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 13,
+      "candidate_trajectory_id": "a79983b7-7869-462a-bbcf-59105c51c3f5",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 12,
+      "previous_trajectory_id": "013e2e67-d677-45b0-ae78-e7dfc74b7cee",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_two_obj_and_place-PepperShaker-None-Drawer-10/trial_T20190912_221141_608117/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c",
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 8,
+      "candidate_trajectory_id": "dc473a8c-d1cb-4564-945f-610f35c92151",
+      "previous_outcome": "environment_failure",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 50,
+      "previous_trajectory_id": "06aea203-b4a7-458b-87a3-dc9118dec8fb",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_heat_then_place_in_recep-Egg-None-GarbageCan-10/trial_T20190908_113432_673307/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5",
+        "episode-dc473a8c-d1cb-4564-945f-610f35c92151"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 10,
+      "candidate_trajectory_id": "9ea840c6-f85f-43ca-9a44-15fc04747b9b",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 14,
+      "previous_trajectory_id": "f4c63db9-3ace-455c-98c8-5d862ddd6832",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_cool_then_place_in_recep-Lettuce-None-CounterTop-10/trial_T20190909_174807_646433/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5",
+        "episode-9ea840c6-f85f-43ca-9a44-15fc04747b9b",
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 12,
+      "candidate_trajectory_id": "0f4c2f03-d674-4ddc-8b0f-23cf4d1eedab",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 25,
+      "previous_trajectory_id": "0f64ab9c-dc83-4920-bb3a-b75efb7d3ec2",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_two_obj_and_place-PepperShaker-None-Drawer-10/trial_T20190908_010306_215435/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "environment_failure",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-9ea840c6-f85f-43ca-9a44-15fc04747b9b",
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-b76edb1e-cbab-4293-943f-8e86176b998c"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 50,
+      "candidate_trajectory_id": "db73a94c-ad20-482f-8eb0-0389b397ba3e",
+      "previous_outcome": "environment_failure",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 50,
+      "previous_trajectory_id": "d0bf07fa-65f2-40e5-9300-ade00e48d1cb",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_cool_then_place_in_recep-Tomato-None-Microwave-10/trial_T20190909_102608_318800/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+        "episode-dc473a8c-d1cb-4564-945f-610f35c92151"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 11,
+      "candidate_trajectory_id": "43f88b81-381c-49da-9cd6-b579a0842db4",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 18,
+      "previous_trajectory_id": "8f8c91ca-2553-4001-899f-5562033ec5bd",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_clean_then_place_in_recep-Mug-None-CoffeeMachine-10/trial_T20190907_221208_560499/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5",
+        "episode-0f4c2f03-d674-4ddc-8b0f-23cf4d1eedab"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 9,
+      "candidate_trajectory_id": "49788732-91c7-4cb2-a268-92da7fe394b8",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 18,
+      "previous_trajectory_id": "6d63161e-81a6-462c-8e8d-df7353f3c55f",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_two_obj_and_place-SoapBar-None-Cabinet-424/trial_T20190909_081746_857594/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+        "episode-49788732-91c7-4cb2-a268-92da7fe394b8",
+        "episode-43f88b81-381c-49da-9cd6-b579a0842db4"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 14,
+      "candidate_trajectory_id": "d80189f3-493f-4019-91c7-04dd54d79716",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 4,
+      "previous_trajectory_id": "fec20e56-4a41-4f4d-a95e-0783538bdc43",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_and_place_simple-SoapBottle-None-Toilet-424/trial_T20190907_004404_604165/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-0f4c2f03-d674-4ddc-8b0f-23cf4d1eedab",
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5",
+        "episode-43f88b81-381c-49da-9cd6-b579a0842db4"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 8,
+      "candidate_trajectory_id": "2501d0b2-5c2c-45ce-a995-d2c808d1a841",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 28,
+      "previous_trajectory_id": "53b739e4-88c8-4253-a1b8-3b36fcda8f7f",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_clean_then_place_in_recep-Spatula-None-Drawer-10/trial_T20190907_080825_222432/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-0f4c2f03-d674-4ddc-8b0f-23cf4d1eedab",
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5",
+        "episode-2501d0b2-5c2c-45ce-a995-d2c808d1a841"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 7,
+      "candidate_trajectory_id": "91c95f40-b273-489e-8aef-796254457c24",
+      "previous_outcome": "environment_failure",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 50,
+      "previous_trajectory_id": "fd18aa51-edc5-411b-bdb7-7bc0465d48dd",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_and_place_simple-PepperShaker-None-Drawer-10/trial_T20190906_184021_215264/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-49788732-91c7-4cb2-a268-92da7fe394b8",
+        "episode-e07220e7-b28c-4a02-979e-d0d60ed4b02f",
+        "episode-2501d0b2-5c2c-45ce-a995-d2c808d1a841"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 7,
+      "candidate_trajectory_id": "77c2217a-563f-402a-8750-04dcdfa257ff",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 7,
+      "previous_trajectory_id": "e664074f-c4b2-47aa-8fce-0f1c793dbe9b",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_clean_then_place_in_recep-SoapBar-None-Cabinet-424/trial_T20190908_214926_337906/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "aborted",
+      "candidate_parse_failures": 1,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-43f88b81-381c-49da-9cd6-b579a0842db4",
+        "episode-77c2217a-563f-402a-8750-04dcdfa257ff"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 25,
+      "candidate_trajectory_id": "cd516740-564f-4033-94bb-0c0f5de176cb",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 21,
+      "previous_trajectory_id": "65c938e1-6c71-4166-ab38-0e4268d84ec0",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_and_place_simple-Vase-None-Safe-219/trial_T20190908_205221_748352/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-9ea840c6-f85f-43ca-9a44-15fc04747b9b",
+        "episode-43f88b81-381c-49da-9cd6-b579a0842db4"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 6,
+      "candidate_trajectory_id": "f0102220-4b90-41b7-8c90-3b6f5b00c813",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 10,
+      "previous_trajectory_id": "f1e71518-8796-493f-8c5d-7c05adb3b891",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_cool_then_place_in_recep-Mug-None-Cabinet-10/trial_T20190909_121559_082363/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "success",
+      "candidate_parse_failures": 0,
+      "candidate_retrieved_memory_ids": [
+        "episode-0f4c2f03-d674-4ddc-8b0f-23cf4d1eedab",
+        "episode-91c95f40-b273-489e-8aef-796254457c24",
+        "episode-a79983b7-7869-462a-bbcf-59105c51c3f5"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 13,
+      "candidate_trajectory_id": "b02c32f8-43d0-4a45-aa5c-823ae0d76a33",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 5,
+      "previous_trajectory_id": "a19d0af9-3cb5-46c1-97b7-f328b76d4112",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_and_place_simple-PepperShaker-None-Drawer-10/trial_T20190918_154326_823501/game.tw-pddl"
+    },
+    {
+      "candidate_normalized_actions": 0,
+      "candidate_outcome": "aborted",
+      "candidate_parse_failures": 1,
+      "candidate_retrieved_memory_ids": [
+        "episode-f0102220-4b90-41b7-8c90-3b6f5b00c813",
+        "episode-277ff457-c700-4318-81d3-b8726e0ffc0f",
+        "episode-43f88b81-381c-49da-9cd6-b579a0842db4"
+      ],
+      "candidate_run_id": "phase4-episodic-20",
+      "candidate_steps": 20,
+      "candidate_trajectory_id": "6fdbd05f-d71c-4835-ae78-f059e56554a2",
+      "previous_outcome": "success",
+      "previous_parse_failures": 0,
+      "previous_run_id": "phase3b-pilot-20",
+      "previous_steps": 5,
+      "previous_trajectory_id": "8c427d95-639c-43fe-9cf3-ecaa6c4d925a",
+      "task_id": "/workspaces/adaptive-experience-compression/data/alfworld/json_2.1.1/valid_unseen/pick_and_place_simple-Mug-None-Desk-308/trial_T20190908_125200_737896/game.tw-pddl"
+    }
+  ]
+}

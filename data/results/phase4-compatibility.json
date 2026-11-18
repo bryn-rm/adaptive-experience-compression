@@ -1,0 +1,28 @@
+{
+  "config": "configs/episodic_pilot.yaml",
+  "created_at": "2026-11-18T14:19:41.646787+00:00",
+  "embedding": {
+    "dimensions": 1536,
+    "prompt_tokens": 10,
+    "requested": "text-embedding-3-small",
+    "returned": "text-embedding-3-small"
+  },
+  "query_text": "heat some apple and put it in garbagecan.",
+  "source_trajectory_id": "e3df8df3-ba12-4867-b1df-92bcefb4ca0e",
+  "writer": {
+    "finish_reason": "stop",
+    "output": "{\"task_summary\":\"Heated apple 1 with microwave 1 and moved it to garbagecan 1.\",\"experience\":\"Apple 1 was on countertop 1. Pick it up, then use the microwave\u2019s heating action directly while holding the apple; the successful action was \\\"heat apple 1 with microwave 1.\\\" Afterwards, go to garbagecan 1 and move the heated apple into it. Garbagecan 1 initially had papertowelroll 1 and potato 1 on it. Avoid searching the fridge and cabinets: fridge 1 contained bowl 1, pan 1, plate 1, and tomato 1; cabinet 2 had mug 1; cabinet 5 was empty; other checked cabinets had cups or a vase. Also avoid putting the apple in the microwave and repeatedly opening/closing/examining it before heating, as this was unnecessary.\",\"outcome\":\"The task succeeded after the heated apple was placed in garbagecan 1.\"}",
+    "parse_error": null,
+    "parsed": {
+      "experience": "Apple 1 was on countertop 1. Pick it up, then use the microwave\u2019s heating action directly while holding the apple; the successful action was \"heat apple 1 with microwave 1.\" Afterwards, go to garbagecan 1 and move the heated apple into it. Garbagecan 1 initially had papertowelroll 1 and potato 1 on it. Avoid searching the fridge and cabinets: fridge 1 contained bowl 1, pan 1, plate 1, and tomato 1; cabinet 2 had mug 1; cabinet 5 was empty; other checked cabinets had cups or a vase. Also avoid putting the apple in the microwave and repeatedly opening/closing/examining it before heating, as this was unnecessary.",
+      "outcome": "The task succeeded after the heated apple was placed in garbagecan 1.",
+      "task_summary": "Heated apple 1 with microwave 1 and moved it to garbagecan 1."
+    },
+    "requested": "gpt-5.6-terra",
+    "returned": "gpt-5.6-terra",
+    "token_usage": {
+      "completion_tokens": 197,
+      "prompt_tokens": 1661
+    }
+  }
+}

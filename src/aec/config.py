@@ -43,6 +43,43 @@ class AgentConfig(BaseModel):
         return self
 
 
+class EmbeddingConfig(BaseModel):
+    """The single fixed embedding model; retrieval comparisons must keep it identical."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    provider: Literal["openai"] = "openai"
+    model_id: str = Field(min_length=1)
+    dimensions: int | None = Field(default=None, ge=1, strict=True)
+    timeout_seconds: float = Field(default=60, gt=0)
+
+
+class EpisodeWriterConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    prompt_version: Literal["episode_writer_v1"] = "episode_writer_v1"
+    llm: LLMConfig
+
+
+class MemoryConfig(BaseModel):
+    """Long-term memory policy. Absent memory config is the no-memory policy."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    policy: Literal["episodic"] = "episodic"
+    store_path: Path
+    top_k: int = Field(ge=1, strict=True)
+    # Never retrieve memories derived from the task currently being attempted.
+    exclude_same_task: bool = True
+    # task_goal embeds only the "Your task is to:" line; task_description the full reset text.
+    retrieval_key: Literal["task_goal", "task_description"] = "task_goal"
+    memory_format: Literal["memory_section_v1"] = "memory_section_v1"
+    # Fixed local tokenizer for stored/injected memory token accounting.
+    tokenizer: Literal["o200k_base"] = "o200k_base"
+    embedding: EmbeddingConfig
+    writer: EpisodeWriterConfig
+
+
 class Config(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

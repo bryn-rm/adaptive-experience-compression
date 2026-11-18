@@ -12,8 +12,8 @@ from typing import Annotated, Literal, TypeVar
 from pydantic import ConfigDict, Field, model_validator
 import yaml
 
-from aec.config import ALFWorldConfig, AgentConfig
-from aec.schemas import NonEmpty, Schema
+from aec.config import ALFWorldConfig, AgentConfig, MemoryConfig
+from aec.schemas import EpisodicMemory, NonEmpty, RetrievalRecord, Schema, TokenUsage
 
 
 def digest(value: object) -> str:
@@ -68,6 +68,14 @@ class BaselineConfig(Schema):
     selection_count: int = Field(default=20, ge=1, strict=True)
     selection_seed: int = 0
     data_kind: Literal["real_alfworld", "fake_verification"] = "real_alfworld"
+    # None is the no-memory policy; both policies share this runner and base agent.
+    memory: MemoryConfig | None = None
+
+    @model_validator(mode="after")
+    def memory_needs_v2(self):
+        if self.memory is not None and self.agent.prompt_version != "agent_v2":
+            raise ValueError("Memory policies require agent_v2")
+        return self
 
 
 def load_baseline_config(path: str | Path) -> BaselineConfig:
@@ -157,3 +165,67 @@ class TaskResult(Schema):
     usage_known: bool
     wall_time: float = Field(ge=0)
     wall_time_known: bool
+    retrieved_memory_ids: list[NonEmpty] = Field(default_factory=list)
+
+
+class RetrievalLog(Schema):
+    """Decision-time retrieval, written before acting; join outcomes via task/run."""
+
+    run_id: NonEmpty
+    task_id: NonEmpty
+    query_text: NonEmpty
+    store_size: int = Field(ge=0)
+    eligible_count: int = Field(ge=0)
+    records: list[RetrievalRecord]
+    source_trajectory_ids: list[NonEmpty]
+    memory_section: str | None
+    memory_tokens: int = Field(ge=0)
+    embedding_model_id: NonEmpty
+    embedding_tokens: int = Field(ge=0)
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def consistent(self):
+        if [r.rank for r in self.records] != list(range(1, len(self.records) + 1)):
+            raise ValueError("Retrieval ranks must be contiguous from one")
+        if any(r.task_id != self.task_id for r in self.records):
+            raise ValueError("Retrieval records belong to another task")
+        if len(self.source_trajectory_ids) != len(self.records):
+            raise ValueError("Each retrieved memory needs its source trajectory")
+        if (self.memory_section is None) != (not self.records):
+            raise ValueError("A memory section is present exactly when memories are retrieved")
+        return self
+
+
+class MemoryWrite(Schema):
+    """Append-only episode-writing log; `stored` rows are the store's source of truth."""
+
+    run_id: NonEmpty
+    task_id: NonEmpty
+    trajectory_id: NonEmpty
+    status: Literal["started", "stored", "rejected", "provider_failure",
+                    "embedding_failure", "interrupted"]
+    writer_prompt_version: NonEmpty
+    prompt: str | None = None
+    output: str | None = None
+    error: str | None = None
+    error_type: str | None = None
+    response_model_id: str | None = None
+    response_id: str | None = None
+    finish_reason: str | None = None
+    token_usage: TokenUsage = Field(default_factory=TokenUsage)
+    usage_known: bool = False
+    embedding_model_id: str | None = None
+    embedding_tokens: int = Field(default=0, ge=0)
+    memory: EpisodicMemory | None = None
+    embedding: list[float] | None = None
+    created_at: datetime
+
+    @model_validator(mode="after")
+    def consistent(self):
+        stored = self.status == "stored"
+        if stored != (self.memory is not None) or stored != (self.embedding is not None):
+            raise ValueError("Exactly stored writes carry a memory and its embedding")
+        if self.memory is not None and self.memory.source_trajectory_ids != [self.trajectory_id]:
+            raise ValueError("Episode provenance differs from its source trajectory")
+        return self

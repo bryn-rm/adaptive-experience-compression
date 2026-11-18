@@ -316,3 +316,64 @@ separate aggregates and paired task outcomes with both source trajectory IDs.
 It explicitly labels the comparison as descriptive and non-causal. The old run's
 source/config hashes intentionally differ after this redesign; the old run is
 preserved for read-only comparison, not resumed using changed acting source code.
+
+## Phase 4: episodic-memory baseline
+
+`configs/episodic_pilot.yaml` adds a `memory` section to the frozen Phase 3b setup.
+Its manifest, environment, and acting agent (`agent_v2`, model, decoding, history)
+are identical to `configs/baseline_calibration.yaml`; a test enforces this. A config
+without `memory` is the no-memory policy. Both policies use the same runner
+(`scripts/run_baseline.py`) and the same `run_episode` acting loop.
+
+Install the memory tokenizer (`configs/phase4-pilot-requirements.txt` records the
+exact environment), then probe provider compatibility and run:
+
+```sh
+.venv-alfworld/bin/python -m pip install -e '.[dev,alfworld,openai,memory]'
+export ALFWORLD_DATA="$PWD/data/alfworld"
+# Optional; one embedding call and one writer call; choose a NEW output path:
+.venv-alfworld/bin/python scripts/probe_memory_stack.py --source data/results/phase3b-pilot-20/trajectories.jsonl --output /tmp/new-probe.json
+.venv-alfworld/bin/python scripts/run_baseline.py run --config configs/episodic_pilot.yaml
+.venv-alfworld/bin/python scripts/compare_baselines.py --previous data/results/phase3b-pilot-20 --candidate data/results/phase4-episodic-20 --output /tmp/new-comparison.json
+```
+
+Online stream design: tasks run in fixed manifest order. For each task, after
+reset and before the first action, the goal line (`Your task is to: ...`,
+`retrieval_key: task_goal`) is embedded with the fixed `text-embedding-3-small`
+model and the top-k stored episodes are retrieved by brute-force cosine similarity
+(ties broken by insertion order). Episodes derived from the current task ID are
+excluded. When nothing is retrievable no query call is made. Retrieved episodes
+are inserted as one fixed-format line (`memory_section_v1`) directly after the
+task line. **With zero retrieved episodes the prompt is byte-identical to agent_v2;**
+all 442 recorded Phase 3b prompts were reproduced exactly by the modified builder.
+
+After a completed, environment-confirmed **successful** trajectory, the
+`episode_writer_v1` prompt receives only observable data (task, initial observation,
+executed actions and resulting observations) and must return strict JSON with
+`task_summary`, `experience`, and `outcome`. Malformed output is rejected and stored
+nowhere; there is no repair or retry. The episode's `embedding_text` is the source
+task's goal line, never writer output. `memory_id` is derived from, and
+`source_trajectory_ids` contains, the source trajectory ID. Episode `token_count`
+uses the fixed local `o200k_base` tokenizer on the rendered episode.
+
+Additional files in `data/results/<run_id>/`:
+
+- `retrievals.jsonl`: one decision-time row per task, written before acting: query,
+  store size, eligible count, memory IDs, similarities, ranks, source trajectory
+  IDs, the exact injected section, its token count, and query-embedding usage.
+  `results.jsonl` repeats `retrieved_memory_ids` alongside each task outcome.
+- `memory_writes.jsonl`: `started` then one terminal row (`stored`, `rejected`,
+  `provider_failure`, `embedding_failure`, `interrupted`) per successful trajectory,
+  with writer prompt/output/usage; `stored` rows carry the episode and its vector.
+- `metrics.json` gains a `memory` block: retrieval counts, injected memory tokens,
+  writer and embedding tokens (kept separate from acting tokens), write outcomes,
+  stored episodes, and stored memory tokens.
+
+The SQLite store (`memory.store_path`) persists across processes and runs and can
+be opened read-only by later phases. It is bound to one embedding configuration and
+one writing run ID; a fresh run refuses a pre-existing store. The append-only
+`memory_writes.jsonl` is its source of truth: every start verifies the store
+against it, reinserts a row lost between log append and store insert, and rejects
+any other difference. A writer call interrupted mid-flight is logged as
+`interrupted` and never replayed. A task result commits only after its episode
+write finishes, so stream order is preserved on resume.

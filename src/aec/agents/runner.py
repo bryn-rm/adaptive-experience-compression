@@ -12,7 +12,7 @@ from aec.agents.v2 import ObservationAction, build_prompt_v2, parse_action_v2
 from aec.config import AgentConfig
 from aec.environments.alfworld import ALFWorldAdapter
 from aec.llm import LLMClient
-from aec.schemas import TokenUsage
+from aec.schemas import Task, TokenUsage
 from aec.trajectories.recorder import TrajectoryRecorder
 from aec.trajectories.schemas import AgentStep, AgentTrajectory
 
@@ -27,9 +27,13 @@ def run_episode(
     *,
     run_id: str,
     clock: Callable[[], float] = perf_counter,
+    retrieve_memory: Callable[[Task], str | None] | None = None,
 ) -> AgentTrajectory:
+    """`retrieve_memory` runs once after reset, before acting; None means no memory."""
     if not run_id:
         raise ValueError("run_id must be non-empty")
+    if retrieve_memory is not None and config.prompt_version != "agent_v2":
+        raise ValueError("Retrieved memory requires agent_v2")
     settings = config.model_copy(deep=True)
     environment_config = env.config.model_copy(deep=True)
     backend_hash = hashlib.sha256(environment_config.backend_config.read_bytes()).hexdigest()
@@ -37,6 +41,7 @@ def run_episode(
     initial = env.reset()
     task = initial.task
     observation = initial.observation
+    memory_section = retrieve_memory(task.model_copy(deep=True)) if retrieve_memory else None
     steps: list[AgentStep] = []
     score = 0.0
     success = False
@@ -52,7 +57,8 @@ def run_episode(
         if settings.prompt_version == "agent_v2":
             history = [ObservationAction(s.observation, s.action) for s in steps if s.executed]
             prompt = build_prompt_v2(task, observation, actions, history,
-                                     history_length=settings.history_length)
+                                     history_length=settings.history_length,
+                                     memory_section=memory_section)
         else:
             prompt = build_prompt(task, observation, actions)
         step_started = clock()
