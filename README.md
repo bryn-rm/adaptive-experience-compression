@@ -415,3 +415,48 @@ retrieved the prompt is unchanged agent_v2.
 `RetrievalLog` now lists one source-trajectory list per record; Phase 4 logs, which
 stored one bare ID per episode, still load. Skills live in a separate `SkillStore`
 (`skill_store_v1`), which cannot be opened as an episode store or the reverse.
+
+## Gate A: does memory change behaviour?
+
+`configs/gate_a/` reruns the three policies under new run IDs and stores, plus a second
+no-memory run. Each config equals its pilot (`baseline_calibration.yaml`,
+`episodic_pilot.yaml`, `skill_pilot.yaml`) except run ID and store path; a test
+enforces this. The acting model samples at its provider-default temperature, so the
+no-memory replicate gives the run-to-run noise floor. Without it, action differences
+cannot be attributed to memory.
+
+Start all four runs together, from one commit and environment, so they share code,
+dependencies, and a time window. Each run has its own directory, lock, and store.
+
+```sh
+export ALFWORLD_DATA="$PWD/data/alfworld"
+for c in no_memory no_memory_replicate episodic skill; do
+  .venv-alfworld/bin/python scripts/run_baseline.py run --config configs/gate_a/$c.yaml &
+done; wait
+.venv-alfworld/bin/python scripts/gate_a_report.py \
+  --no-memory data/results/gatea-none-20 --no-memory-replicate data/results/gatea-none-r2-20 \
+  --episodic data/results/gatea-episodic-20 --skill data/results/gatea-skill-20 \
+  --output data/results/gate-a-report.json
+```
+
+The report (`gate_a_v1`) revalidates every run against its canonical trajectories,
+then rejects runs that differ in manifest, environment, acting agent, or data kind,
+or whose episodic and skill runs do not share retrieval machinery and writer LLM.
+It does not assume weaker controls; it records them under `controls`: same source hash,
+Python, and packages, and all attempts starting within `--max-span-hours` (default 24).
+`controlled` is true only when all of them hold.
+
+It compares no memory vs episodic, no memory vs skill, episodic vs skill, and no memory
+vs replicate (the noise floor). Each comparison reports:
+
+- paired success transitions: both, neither, reference only, candidate only;
+- negative and positive transfer rates (with no memory as reference, the build-guide
+  NTR), with trajectory IDs and retrieved memory IDs for every flipped task;
+- an exact two-sided sign test on discordant pairs (exploratory);
+- failure-mode changes, where a failure mode is `outcome:termination_reason`;
+- identical executed-action sequences, first divergent step, and `difflib` action
+  similarity;
+- the paired step difference on tasks both runs solved.
+
+It also carries per-policy metrics, including memory metrics. The report is descriptive
+and does not decide the gate.

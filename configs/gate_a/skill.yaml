@@ -1,0 +1,58 @@
+# Gate A rerun. Identical to configs/skill_pilot.yaml except run ID and store path.
+# Run all Gate A configs together (same code, dependencies, and time window).
+# Phase 5 fixed procedural-skill policy (online stream). The manifest, environment, and
+# acting agent are identical to the frozen Phase 3b baseline candidate (B0).
+run_id: gatea-skill-20
+manifest: data/manifests/phase3-pilot-20.json
+output_dir: data/results
+selection_count: 20
+selection_seed: 0
+data_kind: real_alfworld
+environment:
+  backend_config: configs/alfworld_backend.yaml
+  split: eval_out_of_distribution
+  max_steps: 50
+  seed: 0
+agent:
+  prompt_version: agent_v2
+  history_length: 4
+  llm:
+    provider: openai
+    model_id: gpt-5.6-terra
+    reasoning_effort: low
+    # The live API rejects temperature=0 for this model; omit it explicitly.
+    temperature: null
+    top_p: 1
+    # Includes internal reasoning tokens as well as the public action.
+    max_completion_tokens: 2048
+    seed: 0
+    timeout_seconds: 60
+memory:
+  policy: skill
+  # Must not exist before the run starts; only this run writes to it.
+  store_path: data/memory/gatea-skill-20/skills.sqlite
+  top_k: 3
+  exclude_same_task: true
+  retrieval_key: task_goal
+  memory_format: skill_section_v1
+  tokenizer: o200k_base
+  # Fixed baseline rule, not the adaptive controller: once a task family has >= 2
+  # successes in this run, re-synthesize its skill from all of them (new version).
+  skill_grouping: task_family
+  skill_min_sources: 2
+  embedding:
+    provider: openai
+    model_id: text-embedding-3-small
+    dimensions: null
+    timeout_seconds: 60
+  writer:
+    prompt_version: skill_writer_v1
+    llm:
+      provider: openai
+      model_id: gpt-5.6-terra
+      reasoning_effort: low
+      temperature: null
+      top_p: 1
+      max_completion_tokens: 4096
+      seed: 0
+      timeout_seconds: 120

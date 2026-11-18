@@ -9,7 +9,8 @@ from aec.experiments.baseline import aggregate, task_result
 from aec.trajectories.schemas import AgentTrajectory
 
 
-def _load_run(directory: Path):
+def load_run(directory: Path):
+    """Validated run: resolved config, manifest, results, trajectories, retrievals."""
     resolved = json.loads((directory / 'resolved_config.json').read_text())
     manifest = TaskManifest.model_validate(resolved['manifest'])
     results = read_rows(directory / 'results.jsonl', TaskResult)
@@ -24,12 +25,12 @@ def _load_run(directory: Path):
     for result, trajectory in zip(results, trajectories):
         if result != task_result(trajectory, resolved, retrievals.get(result.task_id)):
             raise ValueError('Result does not match its canonical trajectory')
-    return resolved, manifest, results
+    return resolved, manifest, results, trajectories, retrievals
 
 
 def compare_runs(previous: Path, candidate: Path) -> dict:
-    before, manifest_before, old = _load_run(previous)
-    after, manifest_after, new = _load_run(candidate)
+    before, manifest_before, old, _, _ = load_run(previous)
+    after, manifest_after, new, _, _ = load_run(candidate)
     if manifest_before != manifest_after:
         raise ValueError('Comparison requires the same immutable task manifest')
     if ALFWorldConfig.model_validate(before['config']['environment']) != (
